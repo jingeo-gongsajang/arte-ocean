@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치</title>
+    <style>
+        /* 전체 화면을 채우는 div */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* 배경 이미지 스타일 */
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('sea_images/sea-background.png'); /* 배경 이미지 URL */
+            background-size: cover;
+            background-position: center;
+            z-index: -1; /* 배경이 다른 이미지 뒤에 오도록 설정 */
+        }
+
+        /* 화면에 꽉 차게 넣을 이미지 */
+        .foreground {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 이미지를 화면에 꽉 차게 조정 */
+        }
+
+        /* fish1 이미지 스타일 */
+        .fish1 {
+            position: absolute;
+            top: 30%; /* 시작 위치는 화면 위 30% */
+            right: -300px; /* 화면 오른쪽 밖에서 시작 */
+            width: 300px; /* 이미지 크기 */
+            height: auto;
+            object-fit: contain; /* 비율을 유지하며 크기 조정 */
+            animation: fishAppear 2s ease-out forwards, fishMoveUpDown 2s ease-in-out infinite; /* 등장 애니메이션 + 위아래 왕복 애니메이션 */
+            transition: top 0.7s ease-out, right 0.7s ease-out; /* top과 right 속성에 대해 0.7초로 부드럽게 이동 */
+        }
+
+        /* fish1 등장 애니메이션 */
+        @keyframes fishAppear {
+            0% {
+                right: -300px;
+                top: 30%;
+            }
+            100% {
+                right: 10%; /* 화면 안쪽 10% 지점에 나타남 */
+                top: 50%; /* 최종 위치는 화면 세로 중앙 */
+            }
+        }
+
+        /* fish1 위아래로 왕복 애니메이션 */
+        @keyframes fishMoveUpDown {
+            0% {
+                top: 50%;
+            }
+            50% {
+                top: 48%; /* 살짝 위로 이동 */
+            }
+            100% {
+                top: 50%; /* 다시 원래 위치로 돌아옴 */
+            }
+        }
+
+        @keyframes fishExit {
+            0% {
+                right: 10%;
+                top: 49%;
+            }
+            100% {
+                right: -300px;
+                top: 40%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 배경 이미지 영역 -->
+    <div class="background"></div>
+
+    <!-- 화면에 꽉 차게 넣을 이미지 -->
+    <img src="sea_images/coals.png" alt="Foreground Image" class="foreground">
+
+    <!-- fish1 이미지 -->
+    <img src="sea_images/fish1.png" alt="Fish Image" class="fish1" id="fish1">
+
+    <script>
+        // fish1 이미지 클릭 이벤트 처리
+        const fish1 = document.getElementById('fish1');
+
+        // 등장 애니메이션 완료 후 클릭 이벤트 활성화
+        fish1.addEventListener('animationend', () => {
+            // fish1 이미지 클릭 이벤트
+            fish1.addEventListener('click', () => {
+                // 현재 위치 값 읽기
+                const currentTop = window.getComputedStyle(fish1).top;
+                const currentRight = window.getComputedStyle(fish1).right;
+
+                // 이미지를 좌우 반전
+                fish1.style.transform = 'scaleX(-1)';
+
+                // 0.7초 안에 top과 right 값을 현재 위치에서부터 이동
+                fish1.style.animation = 'fishExit 0.7s ease-out forwards';
+
+                // 4초 후에 등장 애니메이션을 다시 시작
+                setTimeout(() => {
+                    // 애니메이션 리셋
+                    fish1.style.transition = 'none'; // 애니메이션 초기화
+                    fish1.style.transform = 'scaleX(1)'; // 다시 원래 반전 없이
+
+                    // 기존 애니메이션 제거 후 다시 시작
+                    fish1.style.animation = 'none'; // 애니메이션 초기화
+                    void fish1.offsetWidth; // reflow 발생 (애니메이션 초기화)
+
+                    // 등장 애니메이션 다시 실행
+                    fish1.style.animation = 'fishAppear 2s ease-out forwards, fishMoveUpDown 2s ease-in-out infinite';
+                }, 4000); // 4초 뒤 실행
+            });
+        });
+    </script>
+
+</body>
+</html>
