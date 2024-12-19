@@ -16,7 +16,7 @@
         /* 배경 이미지 스타일 */
         .background {
             position: absolute;
-            top: 0;
+            top: 100%; /* 처음에는 화면 아래에 위치 */
             left: 0;
             width: 100%;
             height: 100%;
@@ -24,16 +24,18 @@
             background-size: cover;
             background-position: center;
             z-index: -1; /* 배경이 다른 이미지 뒤에 오도록 설정 */
+            animation: backgroundMoveUp 0.4s ease-out forwards; /* 배경이 위로 올라오는 애니메이션 */
         }
 
         /* 화면에 꽉 차게 넣을 이미지 */
         .foreground {
             position: absolute;
-            top: 0;
+            top: 100%; /* 처음에는 화면 아래에 위치 */
             left: 0;
             width: 100%;
             height: 100%;
             object-fit: cover; /* 이미지를 화면에 꽉 차게 조정 */
+            animation: foregroundMoveUp 0.4s ease-out forwards; /* foreground 애니메이션 */
         }
 
         /* fish1 이미지 스타일 */
@@ -44,8 +46,28 @@
             width: 15%; /* 이미지 크기 */
             height: auto;
             object-fit: contain; /* 비율을 유지하며 크기 조정 */
-            animation: fishAppear 2s ease-out forwards, fishMoveUpDown 2s ease-in-out infinite; /* 등장 애니메이션 + 위아래 왕복 애니메이션 */
+            animation: fishAppear 2s ease-out forwards, fishMoveUpDown 2s ease-in-out infinite;
             transition: top 0.7s ease-out, right 0.7s ease-out; /* top과 right 속성에 대해 0.7초로 부드럽게 이동 */
+        }
+
+        /* 배경 이미지 위로 올라오는 애니메이션 */
+        @keyframes backgroundMoveUp {
+            0% {
+                top: 100%;
+            }
+            100% {
+                top: 0;
+            }
+        }
+
+        /* foreground 이미지 위로 올라오는 애니메이션 */
+        @keyframes foregroundMoveUp {
+            0% {
+                top: 100%;
+            }
+            100% {
+                top: 0;
+            }
         }
 
         /* fish1 등장 애니메이션 */
@@ -100,34 +122,52 @@
         // fish1 이미지 클릭 이벤트 처리
         const fish1 = document.getElementById('fish1');
 
-        // 등장 애니메이션 완료 후 클릭 이벤트 활성화
-        fish1.addEventListener('animationend', () => {
-            // fish1 이미지 클릭 이벤트
-            fish1.addEventListener('click', () => {
-                // 현재 위치 값 읽기
-                const currentTop = window.getComputedStyle(fish1).top;
-                const currentRight = window.getComputedStyle(fish1).right;
+        // 배경 이미지가 올라오는 애니메이션이 끝난 후 fishAppear 애니메이션 시작
+        document.querySelector('.background').addEventListener('animationend', () => {
+            // 배경 애니메이션이 끝나면 fish1의 fishAppear 애니메이션 시작
+            fish1.style.animation = 'fishAppear 2s ease-out forwards, fishMoveUpDown 2s ease-in-out infinite';
 
-                // 이미지를 좌우 반전
-                fish1.style.transform = 'scaleX(-1)';
+            // foreground 이미지의 애니메이션 시작
+            const foreground = document.querySelector('.foreground');
+            foreground.style.animation = 'foregroundMoveUp 0.4s ease-out forwards'; // 배경 이미지와 함께 올라옴
+        });
 
-                // 0.7초 안에 top과 right 값을 현재 위치에서부터 이동
-                fish1.style.animation = 'fishExit 0.7s ease-out forwards';
+        // fish1 이미지 클릭 이벤트
+        fish1.addEventListener('click', () => {
+            // 현재 위치 값 읽기
+            const currentTop = window.getComputedStyle(fish1).top;
+            const currentRight = window.getComputedStyle(fish1).right;
 
-                // 4초 후에 등장 애니메이션을 다시 시작
-                setTimeout(() => {
-                    // 애니메이션 리셋
-                    fish1.style.transition = 'none'; // 애니메이션 초기화
-                    fish1.style.transform = 'scaleX(1)'; // 다시 원래 반전 없이
+            // 이미지를 좌우 반전
+            fish1.style.transform = 'scaleX(-1)';
 
-                    // 기존 애니메이션 제거 후 다시 시작
-                    fish1.style.animation = 'none'; // 애니메이션 초기화
-                    void fish1.offsetWidth; // reflow 발생 (애니메이션 초기화)
+            // 0.7초 안에 top과 right 값을 현재 위치에서부터 이동
+            fish1.style.animation = 'fishExit 0.7s ease-out forwards';
 
-                    // 등장 애니메이션 다시 실행
-                    fish1.style.animation = 'fishAppear 2s ease-out forwards, fishMoveUpDown 2s ease-in-out infinite';
-                }, 4000); // 4초 뒤 실행
-            });
+            // 4초 후에 등장 애니메이션을 다시 시작
+            setTimeout(() => {
+                // 애니메이션 리셋
+                fish1.style.transition = 'none'; // 애니메이션 초기화
+                fish1.style.transform = 'scaleX(1)'; // 다시 원래 반전 없이
+
+                // 기존 애니메이션 제거 후 다시 시작
+                fish1.style.animation = 'none'; // 애니메이션 초기화
+                void fish1.offsetWidth; // reflow 발생 (애니메이션 초기화)
+
+                // 등장 애니메이션 다시 실행
+                fish1.style.animation = 'fishAppear 2s ease-out forwards, fishMoveUpDown 2s ease-in-out infinite';
+            }, 4000); // 4초 뒤 실행
+        });
+
+        // 화면의 상단 10% 영역 클릭 시 이동 처리
+        document.body.addEventListener('click', function(event) {
+            const screenHeight = window.innerHeight;
+            const clickY = event.clientY; // 클릭한 Y 좌표
+
+            // 상단 10% 영역의 Y 값은 화면 높이의 10% 이내
+            if (clickY <= screenHeight * 0.1) {
+                window.location.href = 'https://jingeo-gongsajang.github.io/arte-erath/';
+            }
         });
     </script>
 
