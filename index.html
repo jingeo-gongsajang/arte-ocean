@@ -1,188 +1,180 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치산치핀치</title>
     <style>
-      body {
-        margin: 0;
-        overflow-x: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #29cfb9;
-        width: 100vw;
-        height: 100vh;
-      }
+        /* 전체 화면을 채우는 div */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
 
-      #container {
-        width: 100vw;
-        height: 100vh;
-      }
+        /* 배경 이미지 스타일 */
+        .background {
+            position: absolute;
+            top: 100%; /* 처음에는 화면 아래에 위치 */
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('sea_images/sea-background.png'); /* 배경 이미지 URL */
+            background-size: cover;
+            background-position: center;
+            z-index: -1; /* 배경이 다른 이미지 뒤에 오도록 설정 */
+            animation: backgroundMoveUp 0.4s ease-out forwards; /* 배경이 위로 올라오는 애니메이션 */
+        }
 
-      svg {
-        display: none;
-      }
+        /* 화면에 꽉 차게 넣을 이미지 */
+        .foreground {
+            position: absolute;
+            top: 100%; /* 처음에는 화면 아래에 위치 */
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 이미지를 화면에 꽉 차게 조정 */
+            animation: foregroundMoveUp 0.4s ease-out forwards; /* foreground 애니메이션 */
+        }
+
+        /* fish1 이미지 스타일 */
+        .fish1 {
+            position: absolute;
+            top: 30%; /* 시작 위치는 화면 위 30% */
+            right: -300px; /* 화면 오른쪽 밖에서 시작 */
+            width: 15%; /* 이미지 크기 */
+            height: auto;
+            object-fit: contain; /* 비율을 유지하며 크기 조정 */
+            animation: fishAppear 2s ease-out forwards, fishMoveUpDown 2s ease-in-out infinite;
+            transition: top 0.7s ease-out, right 0.7s ease-out; /* top과 right 속성에 대해 0.7초로 부드럽게 이동 */
+        }
+
+        /* 배경 이미지 위로 올라오는 애니메이션 */
+        @keyframes backgroundMoveUp {
+            0% {
+                top: 100%;
+            }
+            100% {
+                top: 0;
+            }
+        }
+
+        /* foreground 이미지 위로 올라오는 애니메이션 */
+        @keyframes foregroundMoveUp {
+            0% {
+                top: 100%;
+            }
+            100% {
+                top: 0;
+            }
+        }
+
+        /* fish1 등장 애니메이션 */
+        @keyframes fishAppear {
+            0% {
+                right: -300px;
+                top: 30%;
+            }
+            100% {
+                right: 10%; /* 화면 안쪽 10% 지점에 나타남 */
+                top: 50%; /* 최종 위치는 화면 세로 중앙 */
+            }
+        }
+
+        /* fish1 위아래로 왕복 애니메이션 */
+        @keyframes fishMoveUpDown {
+            0% {
+                top: 50%;
+            }
+            50% {
+                top: 48%; /* 살짝 위로 이동 */
+            }
+            100% {
+                top: 50%; /* 다시 원래 위치로 돌아옴 */
+            }
+        }
+
+        @keyframes fishExit {
+            0% {
+                right: 10%;
+                top: 49%;
+            }
+            100% {
+                right: -300px;
+                top: 40%;
+            }
+        }
     </style>
-  </head>
-  <body>
-    <div id="container"></div>
+</head>
+<body>
 
-    <!-- path cdn -->
-    <script src="https://cdn.jsdelivr.net/npm/pathseg@1.2.1/pathseg.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/poly-decomp@0.3.0/build/decomp.min.js"></script>
+    <!-- 배경 이미지 영역 -->
+    <div class="background"></div>
 
-    <!-- matter.js cdn -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.js"></script>
+    <!-- 화면에 꽉 차게 넣을 이미지 -->
+    <img src="sea_images/coals.png" alt="Foreground Image" class="foreground">
+
+    <!-- fish1 이미지 -->
+    <img src="sea_images/fish1.png" alt="Fish Image" class="fish1" id="fish1">
+
     <script>
-      // 📕보통 matter.js에서 패스를 지정할 때 쓴다.
-      const reactangle =
-        "M82 0C65.9837 0 53 12.9837 53 29C53 32.5144 53.6251 35.8828 54.7703 39C56.7703 45.4615 53 46 49 46H29C12.9837 46 0 58.9837 0 75C0 91.0163 12.9837 104 29 104H357C373.016 104 386 91.0163 386 75C386 58.9837 373.016 46 357 46H336C332 46 328.23 45.4615 330.23 39C331.375 35.8828 332 32.5144 332 29C332 12.9837 319.016 0 303 0H82Z";
-      const curved =
-        "m341.46,31.89c14.51,28.65,3.05,63.65-25.6,78.16-3.42,1.73-34.78,17.16-83.49,26.15-28.57,5.27-57.68,7.34-86.51,6.14-36.13-1.5-71.89-8.14-106.28-19.74C9.15,112.33-7.2,79.34,3.07,48.9,13.33,18.47,46.33,2.12,76.77,12.39c101.89,34.37,185.72-5.68,186.54-6.1,28.65-14.51,63.65-3.05,78.16,25.6Z";
+        // fish1 이미지 클릭 이벤트 처리
+        const fish1 = document.getElementById('fish1');
 
-      // 📕--- 초기 세팅 ---
-      var Engine = Matter.Engine
-        World = Matter.World,
-        Bodies = Matter.Bodies;
-      Body = Matter.Body;
-      Composites = Matter.Composites;
-      Common = Matter.Common;
-      Vertices = Matter.Vertices;
-      Svg = Matter.Svg;
-      Composite = Matter.Composite;
-      // --- 초기 세팅 ---
+        // 배경 이미지가 올라오는 애니메이션이 끝난 후 fishAppear 애니메이션 시작
+        document.querySelector('.background').addEventListener('animationend', () => {
+            // 배경 애니메이션이 끝나면 fish1의 fishAppear 애니메이션 시작
+            fish1.style.animation = 'fishAppear 2s ease-out forwards, fishMoveUpDown 2s ease-in-out infinite';
 
-      // 📕Engine.create() 함수를 사용하여 Matter.js 엔진을 생성한다.
-      const engine = Engine.create({ gravity: { y: 0.01 } });
-      const container = document.getElementById("container");
-
-      // 📕Matter.Render.create() 함수를 사용하여 시각적인 렌더링을 담당하는 객체를 생성한다.
-      const renderer = Matter.Render.create({
-        element: container,
-        engine: engine,
-        options: {
-          width: container.offsetWidth,
-          height: container.offsetHeight,
-          wireframes: false,
-          background: "#29cfb9",
-        },
-      });
-
-      // 📕경계 벽 생성하는 부분 (순서대로 왼쪽, 오른쪽, 아래, 위쪽 벽)
-      const walls = [
-        Bodies.rectangle(0, 0, 1, container.offsetHeight * 2, { isStatic: true }),
-        Bodies.rectangle(container.offsetWidth, 0, 1, container.offsetHeight * 2, { isStatic: true }),
-        Bodies.rectangle(0, container.offsetHeight, container.offsetWidth * 2, 1, { isStatic: true }),
-        Bodies.rectangle(container.offsetWidth / 2, 0, container.offsetWidth * 2, 1, { isStatic: true }),
-      ];
-
-      // 📕물리적 특성을 설정하는 객체인 physics를 정의한다.
-      const physics = {
-        restitution: 0.7, // 복원력
-        friction: 0.7, // 마찰 계수
-      };
-
-      // trash_images 폴더에 있는 이미지 목록 (이미지는 상대 경로로 작성)
-      const trashImages = [];
-      for (let i = 1; i <= 12; i++) {
-        trashImages.push(`trash_images/쓰레기${i}.png`);
-      }
-
-      // 랜덤한 이미지 URL을 선택하는 함수
-      const getRandomTrashImage = () => {
-        const randomIndex = Math.floor(Math.random() * trashImages.length);
-        return trashImages[randomIndex];
-      };
-
-      // 랜덤한 위치를 반환하는 함수
-      const randomPosition = (size) => {
-        const x = Math.random() * (container.offsetWidth - size);
-        const y = Math.random() * (container.offsetHeight - size);
-        return { x, y };
-      };
-
-      // 점 형태로 변환된 작은 원 생성
-      const createDot = (sizePercentage, color) => {
-        const size = Math.min(container.offsetWidth, container.offsetHeight) * (sizePercentage / 100);
-        const position = randomPosition(size);
-        const dot = Bodies.circle(position.x, position.y, size, {
-          ...physics,
-          render: {
-            fillStyle: color,
-            sprite: {
-              texture: getRandomTrashImage(),
-              xScale: 0, // 크기가 0에서 시작
-              yScale: 0, // 크기가 0에서 시작
-            },
-          },
+            // foreground 이미지의 애니메이션 시작
+            const foreground = document.querySelector('.foreground');
+            foreground.style.animation = 'foregroundMoveUp 0.4s ease-out forwards'; // 배경 이미지와 함께 올라옴
         });
-        // 초기 크기를 0으로 설정하고, 점차적으로 크기가 커지도록 애니메이션 적용
-        Matter.Events.on(engine, "beforeUpdate", () => scaleUp(dot));
-        return dot;
-      };
 
-      // 오브젝트의 크기를 점차적으로 키우는 함수
-      const scaleUp = (dot) => {
-        const maxSize = Math.min(container.offsetWidth, container.offsetHeight) * 0.1; // 최종 크기 (10%)
-        if (dot.render.sprite.xScale < 1) {  // xScale이 1에 도달할 때까지 크기를 증가시킨다.
-          dot.render.sprite.xScale += 0.02; // 크기 증가
-          dot.render.sprite.yScale += 0.02; // 크기 증가
-          // 크기가 최종 크기에 도달하면 더 이상 증가하지 않도록 설정
-          if (dot.render.sprite.xScale > 1) {
-            dot.render.sprite.xScale = 1;
-            dot.render.sprite.yScale = 1;
-          }
-        }
-      };
+        // fish1 이미지 클릭 이벤트
+        fish1.addEventListener('click', () => {
+            // 현재 위치 값 읽기
+            const currentTop = window.getComputedStyle(fish1).top;
+            const currentRight = window.getComputedStyle(fish1).right;
 
-      // 물리적 요소들 (점들) 생성
-      const elements = [
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-        createDot(10, "#ffffff"),
-      ];
+            // 이미지를 좌우 반전
+            fish1.style.transform = 'scaleX(-1)';
 
-      // 📕MouseConstraint은 마우스 입력을 기반으로 물리 시뮬레이션에 영향을 주는 제약(Constraint)을 제공한다.
-      const mouseConstraint = Matter.MouseConstraint.create(engine, {
-        element: container,
-        constraint: {
-          stiffness: 0.5,
-          render: {
-            visible: false,
-          },
-        },
-      });
+            // 0.7초 안에 top과 right 값을 현재 위치에서부터 이동
+            fish1.style.animation = 'fishExit 0.7s ease-out forwards';
 
-      // 📕World.add()로 물리 엔진 세계에 다양한 물체들을 추가
-      World.add(engine.world, [...walls, mouseConstraint, ...elements]);
+            // 4초 후에 등장 애니메이션을 다시 시작
+            setTimeout(() => {
+                // 애니메이션 리셋
+                fish1.style.transition = 'none'; // 애니메이션 초기화
+                fish1.style.transform = 'scaleX(1)'; // 다시 원래 반전 없이
 
-      // 📕Engine.run()로 Matter.js 엔진을 실행
-      Engine.run(engine);
-      Matter.Render.run(renderer);
+                // 기존 애니메이션 제거 후 다시 시작
+                fish1.style.animation = 'none'; // 애니메이션 초기화
+                void fish1.offsetWidth; // reflow 발생 (애니메이션 초기화)
 
-      // 📕화면 하단 10% 클릭시 리다이렉트
-      document.addEventListener("click", function (event) {
-        const clickY = event.clientY;
-        const screenHeight = window.innerHeight;
-        if (clickY > screenHeight * 0.9) {
-          window.location.href = "https://jingeo-gongsajang.github.io/arte-ocean/";
-        }
-      });
+                // 등장 애니메이션 다시 실행
+                fish1.style.animation = 'fishAppear 2s ease-out forwards, fishMoveUpDown 2s ease-in-out infinite';
+            }, 4000); // 4초 뒤 실행
+        });
+
+        // 화면의 상단 10% 영역 클릭 시 이동 처리
+        document.body.addEventListener('click', function(event) {
+            const screenHeight = window.innerHeight;
+            const clickY = event.clientY; // 클릭한 Y 좌표
+
+            // 상단 10% 영역의 Y 값은 화면 높이의 10% 이내
+            if (clickY <= screenHeight * 0.1) {
+                window.location.href = 'https://jingeo-gongsajang.github.io/arte-erath/';
+            }
+
+            // 하단 10% 영역 클릭 시 이동 처리
+            if (clickY >= screenHeight * 0.9) {
+                window.location.href = 'https://jingeo-gongsajang.github.io/arte-simhe/';
+            }
+        });
     </script>
-  </body>
+
+</body>
 </html>
