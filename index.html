@@ -175,26 +175,12 @@
       Engine.run(engine);
       Matter.Render.run(renderer);
 
-      // 📕화면 하단 10% 클릭 및 터치시 리다이렉트
-      const redirectToURL = () => {
-        window.location.href = "https://jingeo-gongsajang.github.io/arte-ocean/";
-      };
-
-      // 클릭 이벤트
+      // 📕화면 하단 10% 클릭시 리다이렉트
       document.addEventListener("click", function (event) {
         const clickY = event.clientY;
         const screenHeight = window.innerHeight;
         if (clickY > screenHeight * 0.9) {
-          redirectToURL();
-        }
-      });
-
-      // 터치 이벤트
-      document.addEventListener("touchstart", function (event) {
-        const touchY = event.touches[0].clientY;
-        const screenHeight = window.innerHeight;
-        if (touchY > screenHeight * 0.9) {
-          redirectToURL();
+          window.location.href = "https://jingeo-gongsajang.github.io/arte-ocean/";
         }
       });
     </script>
